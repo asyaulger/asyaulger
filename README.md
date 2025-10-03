@@ -85,9 +85,11 @@ grid = GridSearchCV(pipe, param_grid=param_grid, scoring="f1_macro", cv=cv, n_jo
 # print("ROC-AUC:", roc_auc_score(y_test, y_prob))
 # print("Confusion matrix:\n", confusion_matrix(y_test, y_pred))
 # print(classification_report(y_test, y_pred))
+```
+</details>
 
-<details>
-<summary><b>Sample code: TF-IDF → TruncatedSVD (LSA) → Agglomerative clustering (cosine) with Silhouette</b></summary>
+<details> 
+<summary><b>Sample code: TF-IDF → LSA → Agglomerative clustering (cosine)</b></summary>
 
 ```python
 import numpy as np
@@ -124,10 +126,9 @@ def cluster_and_score(X, k_list=(5, 8, 10, 12, 15)):
 # best_k, best_score = results[0]
 # print("k, silhouette:", results)
 # print("best:", best_k, best_score)
-
+```
 </details>
 
----
 
 ### ⚙️ TSE Querier (C Systems Project)
 - Implemented a **C-based query parser and ranking engine** with abstract data structures.  
