@@ -11,9 +11,11 @@ From high-performance genome sequencing pipelines to AR/VR platforms with real-t
 
 ## 🛠️ Technical Skills
 **Programming:** Python, C/C++, C#, Java, R, SQL, JavaScript  
-**Systems & Tools:** Linux, GitHub, Bash, Unity, HPC environments, MATLAB  
-**Machine Learning:** scikit-learn, pandas, NLP pipelines, clustering/classification  
-**Other:** Rendering algorithms, AR/VR SDKs, Maya, Adobe Creative Suite  
+**Data Wrangling & Pipelines:** ETL workflows, pandas, NumPy, scikit-learn, GridSearchCV, dashboard integration  
+**Systems & Tools:** Linux, GitHub, Bash, HPC environments (Hábrók), Unity, MATLAB  
+**Machine Learning & Analytics:** NLP pipelines, clustering/classification, regression, model validation  
+**Specialized Tools:** Rendering algorithms, AR/VR SDKs, Maya, Adobe Creative Suite  
+
 ## 🔭 Featured Projects
 
 ### ⚡ Cloud Tank: AR/VR Systems Research
@@ -22,6 +24,203 @@ Developed an **XR platform on Meta Quest 3** using **C#/C++ and Unity**.
 - Engineered **projection + headset streaming architecture** for multiple deployment formats.  
 - Built a reusable **2D/3D media asset library** with audio-reactive visuals and texture mapping.  
 Outcome: validated system via **pilot performances with live feedback** and explored XR as a scalable platform for data-driven environments. :contentReference[oaicite:0]{index=0}
+
+<details>
+<summary><b>Sample code:Dynamic Orchestration of Multi-Layer Video Surfaces</b></summary>
+
+```c++
+// 1) Choose prefab (per-track override → fallback)
+var prefab = meta != null && meta.layerPrefab != null
+    ? meta.layerPrefab
+    : (videoLayerPrefabs != null && videoLayerPrefabs.Length > 0 ? videoLayerPrefabs[0] : null);
+if (prefab == null) { Debug.LogError("[VideoLayerManager] No prefab..."); return null; }
+
+// 2) Instantiate + name
+var go = Instantiate(prefab, layersParent);
+go.name = $"Layer {_layerCount++}: {clip.name}";
+go.SetActive(true);
+
+// 3) Placement: fixed slot if available, else procedural layout (with jitter)
+bool placedAtFixedSlot = false;
+if (useFixedSlots) {
+    Transform chosen = GetOverrideSlotFor(prefab) ?? GetNextGenericSlot();
+    if (chosen != null) { go.transform.localPosition = chosen.localPosition;
+                          go.transform.localRotation = chosen.localRotation;
+                          placedAtFixedSlot = true; }
+}
+if (!placedAtFixedSlot) {
+    int total = layersParent.childCount; int index = total - 1;
+    Vector3 localPos = GetSlotLocalPosition(index, total);
+    if (jitterSlightly) localPos += new Vector3(Random.Range(-jitterMax, jitterMax),
+                                                Random.Range(-jitterMax, jitterMax), 0f);
+    go.transform.localPosition = localPos;
+    go.transform.localRotation = Quaternion.identity;
+}
+
+// 4) Stable scale; 5) Require VP + BeatDriver + Frame renderer
+float s = randomizeScale ? Random.Range(minScale, maxScale) : 1f;
+go.transform.localScale = Vector3.one * s;
+var vp = go.GetComponentInChildren<VideoPlayer>();
+var driver = go.GetComponentInChildren<BeatDriver>();
+var frame = go.transform.Find("Frame")?.GetComponent<Renderer>();
+if (vp == null || driver == null || frame == null) { Debug.LogError("[VideoLayerManager] Prefab must include components."); Destroy(go); return null; }
+
+// 6) SkinnedMesh safety for offscreen updates (bounds inflation)
+if (frame is SkinnedMeshRenderer smr) { smr.updateWhenOffscreen = true; smr.localBounds = new Bounds(Vector3.zero, new Vector3(6f,6f,6f)); }
+
+// 9) Diagnostics & frame logging; prepare → play
+vp.sendFrameReadyEvents = true;
+int framesLogged = 0;
+vp.frameReady += (_, __) => { if (framesLogged++ < 3) Debug.Log($"FrameReady → frame={vp.frame}, time={vp.time:0.00}s"); };
+vp.Prepare();
+vp.prepareCompleted += _ => { Debug.Log($"Video prepared → Play '{clip.name}'"); vp.Play(); };
+
+// 10) Beat hookup + reset
+driver.beatTimes = meta.beatTimes.Select(f => (double)f).ToArray();
+driver.videoPlayer = vp;
+driver.Reset();
+
+// 11) Cleanup on end
+vp.loopPointReached += _ => { Debug.Log($"'{clip.name}' reached end → destroying layer GameObject."); Destroy(go); };
+
+// 12) Optional Twist handoff (don’t double layout)
+if (handOffTwistRectangle && LooksLikeTwistRectangle(prefab, go)) {
+    var spawner = twistSpawner ? twistSpawner : FindFirstObjectByType<TwistSpawner>();
+    if (spawner) { if (!spawner.layersParent) spawner.layersParent = layersParent;
+                   spawner.maxCount = 4; spawner.beatsBetweenSpawns = 1;
+                   spawner.ArmFromTemplate(go, meta, clip, texProp, driver);
+                   return vp; }
+}
+return vp;
+```
+</details>
+
+<details>
+<summary><b>Sample code:Real-Time Beat Synchronization Engine</b></summary>
+
+```c++
+void Update() {
+    if (_nextBeatIndex >= beatTimes.Length || videoPlayer == null) return;
+    double t = videoPlayer.time;
+    if (t >= beatTimes[_nextBeatIndex]) {
+        Debug.Log($"[BeatDriver] Beat #{_nextBeatIndex} @ {t:F2}s");
+        OnBeat?.Invoke(_nextBeatIndex);
+        BroadcastMessage("OnBeat", SendMessageOptions.DontRequireReceiver);
+        _nextBeatIndex++;
+    }
+}
+
+public float GetPhase01() {
+    if (beatTimes == null || beatTimes.Length == 0 || videoPlayer == null) return 0f;
+    double t = videoPlayer.time;
+    int prev = Mathf.Clamp(_nextBeatIndex - 1, 0, Mathf.Max(0, beatTimes.Length - 1));
+    int next = (_nextBeatIndex < beatTimes.Length) ? _nextBeatIndex : -1;
+    double tPrev = beatTimes[prev], tNext;
+    if (next >= 0) tNext = beatTimes[next];
+    else {
+        double lastInterval = (beatTimes.Length >= 2)
+            ? beatTimes[^1] - beatTimes[^2] : 0.5;
+        tNext = tPrev + Math.Max(0.0001, lastInterval);
+    }
+    double denom = Math.Max(1e-6, tNext - tPrev);
+    return Mathf.Clamp01((float)((t - tPrev) / denom));
+}
+```
+</details>
+
+<details>
+<summary><b>Sample code:Networked Streaming Pipeline (WebRTC over WebSocket)</b></summary>
+
+```c++
+// StreamRTCamera.Begin(): TURN config → RTCPeerConnection → capture → offer
+var urls = new[] { $"turn:{turnHost}:3478?transport=udp" };
+var ice = new RTCIceServer { urls = urls, username = turnUser, credential = turnPass };
+var cfg = new RTCConfiguration {
+    iceServers = new[] { ice },
+    iceTransportPolicy = relayOnly ? RTCIceTransportPolicy.Relay : RTCIceTransportPolicy.All
+};
+pc = new RTCPeerConnection(ref cfg);
+pc.OnIceConnectionChange = s => Debug.Log("[pc] ICE state: " + s);
+pc.OnConnectionStateChange = s => Debug.Log("[pc] Conn state: " + s);
+pc.OnIceCandidate = c => {
+    if (c == null) return;
+    var payload = JsonUtility.ToJson(new IceMsg { kind="ice", candidate=c.Candidate, sdpMid=c.SdpMid, sdpMlineIndex=c.SdpMLineIndex ?? 0 });
+    if (logSignaling) Debug.Log("[signal out] " + payload);
+    SendText?.Invoke(payload);
+};
+
+// WebRTC-friendly RenderTexture + track
+if (offscreenCam.targetTexture == null) {
+    var desc = new RenderTextureDescriptor(width, height) {
+        graphicsFormat = GraphicsFormat.B8G8R8A8_SRGB, depthBufferBits=0, msaaSamples=1, sRGB=true
+    };
+    offscreenCam.targetTexture = new RenderTexture(desc);
+}
+offscreenCam.forceIntoRenderTexture = true;
+videoTrack = new VideoStreamTrack(offscreenCam.targetTexture);
+pc.AddTrack(videoTrack);
+
+// SDP offer
+var offerOp = pc.CreateOffer(); yield return offerOp;
+if (offerOp.IsError) { Debug.LogError("[pc] CreateOffer failed: " + offerOp.Error.message); yield break; }
+var offer = offerOp.Desc;
+var setLocalOp = pc.SetLocalDescription(ref offer); yield return setLocalOp;
+if (setLocalOp.IsError) { Debug.LogError("[pc] SetLocal(offer) failed: " + setLocalOp.Error.message); yield break; }
+var sdpOut = JsonUtility.ToJson(new SdpMsg { kind="sdp", type="offer", sdp=offer.sdp });
+if (logSignaling) Debug.Log("[signal out] " + sdpOut);
+SendText?.Invoke(sdpOut);
+
+// Remote answer & ICE
+public void OnRemoteSdpReceived(string type, string sdp) {
+    if (pc == null) return;
+    var t = type == "answer" ? RTCSdpType.Answer : type == "offer" ? RTCSdpType.Offer : RTCSdpType.Pranswer;
+    var desc = new RTCSessionDescription { type = t, sdp = sdp };
+    StartCoroutine(SetRemote(desc));
+}
+public void OnRemoteIceReceived(string candidate, int sdpMLineIndex, string sdpMid) {
+    if (pc == null || string.IsNullOrEmpty(candidate)) return;
+    pc.AddIceCandidate(new RTCIceCandidate(new RTCIceCandidateInit { candidate=candidate, sdpMid=sdpMid, sdpMLineIndex=sdpMLineIndex }));
+}
+
+// WebSocketSignaler.Start(): WS connect → JSON demux to IRemoteSignalingSink
+_ws.OnMessage += bytes => {
+    var txt = Encoding.UTF8.GetString(bytes);
+    Debug.Log("[WS<-] " + txt);
+    if (sink == null) return;
+    var msg = JsonUtility.FromJson<Message>(txt);
+    if (msg == null) return;
+    if (msg.kind == "sdp")       sink.OnRemoteSdpReceived(msg.type, msg.sdp);
+    else if (msg.kind == "ice")  sink.OnRemoteIceReceived(msg.candidate, msg.sdpMlineIndex, msg.sdpMid);
+};
+```
+</details>
+
+<details>
+<summary><b>Sample code:Embodied Audio Interaction via Hand Pose</b></summary>
+
+```c++
+public void SetActiveVideo(VideoPlayer vp) {
+    if (vp == null) { ClearSelection(); return; }
+
+    // Ensure the VideoPlayer outputs audio to a local AudioSource.
+    var src = vp.GetComponent<AudioSource>();
+    if (src == null) src = vp.gameObject.AddComponent<AudioSource>();
+    src.playOnAwake = false;
+
+    vp.audioOutputMode = VideoAudioOutputMode.AudioSource;
+    vp.EnableAudioTrack(0, true);
+    vp.SetTargetAudioSource(0, src);
+
+    _activeVP = vp; _activeSrc = src; ActiveVideo = vp;
+
+    if (poseToVolume != null) {
+        // Only adjust the selected track’s volume
+        poseToVolume.targetAudio = _activeSrc;
+        // TRAS gating should call BeginPose/EndPose; we don't start it here.
+    }
+}
+```
+</details>
 
 ---
 
