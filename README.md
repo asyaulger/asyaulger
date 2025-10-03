@@ -9,6 +9,11 @@ From high-performance genome sequencing pipelines to AR/VR platforms with real-t
 
 ---
 
+## 🛠️ Technical Skills
+**Programming:** Python, C/C++, C#, Java, R, SQL, JavaScript  
+**Systems & Tools:** Linux, GitHub, Bash, Unity, HPC environments, MATLAB  
+**Machine Learning:** scikit-learn, pandas, NLP pipelines, clustering/classification  
+**Other:** Rendering algorithms, AR/VR SDKs, Maya, Adobe Creative Suite  
 ## 🔭 Featured Projects
 
 ### ⚡ Cloud Tank: AR/VR Systems Research
@@ -53,20 +58,6 @@ Outcome: demonstrated ability to design **efficient, low-level systems** for hig
 - Presented to **50+ users at Techigala**, showcasing responsive, cross-platform interaction. :contentReference[oaicite:4]{index=4}  
 Outcome: proved capability in **team leadership, rapid prototyping, and XR deployment**.  
 
----
-
-## 🛠️ Technical Skills
-**Programming:** Python, C/C++, C#, Java, R, SQL, JavaScript  
-**Systems & Tools:** Linux, GitHub, Bash, Unity, HPC environments, MATLAB  
-**Machine Learning:** scikit-learn, pandas, NLP pipelines, clustering/classification  
-**Other:** Rendering algorithms, AR/VR SDKs, Maya, Adobe Creative Suite  
-
----
-
-## 🌟 Experience & Leadership
-- **Data Analyst Lead** (Univ. of Groningen, 2019–2024): Directed cross-functional teams to design **genome analysis platforms**, integrating HPC workflows and custom Python apps. :contentReference[oaicite:5]{index=5}  
-- **Hopkins Center Fellow** (2023–Present): Built data-driven outreach campaigns for student audiences, increasing engagement across 4,000+ peers. :contentReference[oaicite:6]{index=6}  
-- **Teaching Assistant** (2025–Present): AR/VR Development & 3D Digital Modeling — mentoring students on **Unity pipelines and computational design**. :contentReference[oaicite:7]{index=7}  
 
 ---
 
