@@ -40,7 +40,92 @@ Built a complete **NLP + clustering pipeline** for **100k+ consumer reviews**.
 - Trained and compared **Logistic Regression, SVM, and K-Means**, optimizing with stratified 5-fold **GridSearchCV (300+ grids)**.  
 - Evaluated with ROC-AUC, F1, silhouette scores, and confusion matrices.  
 - Delivered results in **interactive dashboards** tailored for business stakeholders. :contentReference[oaicite:2]{index=2}  
-Outcome: translated unstructured data into **evidence-based product segmentation**.  
+Outcome: translated unstructured data into **evidence-based product segmentation**.
+
+<details>
+<summary><b>Sample code: TF-IDF + Logistic Regression with stratified GridSearchCV</b></summary>
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import f1_score, roc_auc_score, confusion_matrix, classification_report
+
+# df = pd.read_csv("amazon_reviews.csv")  # expects columns: 'reviewText', 'overall'
+def label_by_cutoff(stars, cutoff): return (stars > cutoff).astype(int)
+
+cutoff = 2
+# y = label_by_cutoff(df["overall"], cutoff)
+# X = df["reviewText"].fillna("")
+# X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=0.2, random_state=42)
+
+pipe = Pipeline([
+    ("tfidf", TfidfVectorizer(max_df=0.9, ngram_range=(1, 2))),
+    ("clf", LogisticRegression(max_iter=200, solver="liblinear"))
+])
+
+param_grid = {
+    "tfidf__ngram_range": [(1,1), (1,2)],
+    "clf__C": [0.1, 1, 10],
+    "clf__class_weight": [None, "balanced"]
+}
+
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+grid = GridSearchCV(pipe, param_grid=param_grid, scoring="f1_macro", cv=cv, n_jobs=-1)
+
+# grid.fit(X_train, y_train)
+# y_pred = grid.predict(X_test)
+# y_prob = grid.predict_proba(X_test)[:, 1]
+
+# print("Best params:", grid.best_params_)
+# print("Macro F1:", f1_score(y_test, y_pred, average="macro"))
+# print("ROC-AUC:", roc_auc_score(y_test, y_prob))
+# print("Confusion matrix:\n", confusion_matrix(y_test, y_pred))
+# print(classification_report(y_test, y_pred))
+
+<details>
+<summary><b>Sample code: TF-IDF → TruncatedSVD (LSA) → Agglomerative clustering (cosine) with Silhouette</b></summary>
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.decomposition import TruncatedSVD
+from sklearn.preprocessing import Normalizer
+from sklearn.pipeline import make_pipeline
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.metrics import silhouette_score
+
+# df = pd.read_csv("amazon_reviews.csv")  # expects column: 'reviewText'
+# docs = df["reviewText"].fillna("")
+
+lsa_pipe = make_pipeline(
+    TfidfVectorizer(max_df=0.9, ngram_range=(1,2)),
+    TruncatedSVD(n_components=100, random_state=42),
+    Normalizer(copy=False)
+)
+
+# X_lsa = lsa_pipe.fit_transform(docs)
+
+def cluster_and_score(X, k_list=(5, 8, 10, 12, 15)):
+    results = []
+    for k in k_list:
+        labels = AgglomerativeClustering(
+            n_clusters=k, linkage="average", metric="cosine"
+        ).fit_predict(X)
+        score = silhouette_score(X, labels, metric="cosine")
+        results.append((k, score))
+    return sorted(results, key=lambda t: t[1], reverse=True)
+
+# results = cluster_and_score(X_lsa)
+# best_k, best_score = results[0]
+# print("k, silhouette:", results)
+# print("best:", best_k, best_score)
+
+</details>
 
 ---
 
