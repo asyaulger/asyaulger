@@ -23,7 +23,7 @@ Developed an **XR platform on Meta Quest 3** using **C#/C++ and Unity**.
 - Implemented **real-time pipelines** for audiovisual data remixing through hand and body tracking.  
 - Engineered **projection + headset streaming architecture** for multiple deployment formats.  
 - Built a reusable **2D/3D media asset library** with audio-reactive visuals and texture mapping.  
-Outcome: validated system via **pilot performances with live feedback** and explored XR as a scalable platform for data-driven environments. :contentReference[oaicite:0]{index=0}
+Outcome: validated system via **pilot performances with live feedback** and explored XR as a scalable platform for data-driven environments. 
 
 <details>
 <summary><b>Sample code:Dynamic Orchestration of Multi-Layer Video Surfaces</b></summary>
@@ -228,7 +228,7 @@ public void SetActiveVideo(VideoPlayer vp) {
 Led development of Python + Linux pipelines for **Nanopore long-read genome data** with the University of Groningen.  
 - Designed a **mutation-detection and visualization app** for phenotypic virus scanning.  
 - Deployed on a **high-performance computing cluster (Hábrók)**, handling terabytes of genomic data.  
-- Coordinated integration with CNRS collaborators, aligning software engineering with biological research needs. :contentReference[oaicite:1]{index=1}  
+- Coordinated integration with CNRS collaborators, aligning software engineering with biological research needs.   
 Outcome: produced scalable workflows for interpreting complex biological datasets.  
 
 ---
@@ -238,7 +238,7 @@ Built a complete **NLP + clustering pipeline** for **100k+ consumer reviews**.
 - Extracted features with TF-IDF, Count, and Hashing vectors.  
 - Trained and compared **Logistic Regression, SVM, and K-Means**, optimizing with stratified 5-fold **GridSearchCV (300+ grids)**.  
 - Evaluated with ROC-AUC, F1, silhouette scores, and confusion matrices.  
-- Delivered results in **interactive dashboards** tailored for business stakeholders. :contentReference[oaicite:2]{index=2}  
+- Delivered results in **interactive dashboards** tailored for business stakeholders.
 Outcome: translated unstructured data into **evidence-based product segmentation**.
 
 <details>
@@ -419,7 +419,7 @@ def cluster_and_score(X, k_list=(5, 8, 10, 12, 15)):
 ### ⚙️ TSE Querier (C Systems Project)
 - Implemented a **C-based query parser and ranking engine** with abstract data structures.  
 - Optimized document scoring with Boolean operators and minimal memory footprint.  
-- Built a suite of **unit and regression tests** ensuring zero memory leaks. :contentReference[oaicite:3]{index=3}  
+- Built a suite of **unit and regression tests** ensuring zero memory leaks.
 Outcome: demonstrated ability to design **efficient, low-level systems** for high-precision information retrieval.  
 
 ---
@@ -427,7 +427,7 @@ Outcome: demonstrated ability to design **efficient, low-level systems** for hig
 ### 🎮 AR/VR Development Projects
 - Created **real-time AR object recognition and spatial mapping** for an interactive environment.  
 - Led a 4-person team to develop a multi-part VR experience (ray casting, shaders, hand tracking).  
-- Presented to **50+ users at Techigala**, showcasing responsive, cross-platform interaction. :contentReference[oaicite:4]{index=4}  
+- Presented to **50+ users at Techigala**, showcasing responsive, cross-platform interaction. 
 Outcome: proved capability in **team leadership, rapid prototyping, and XR deployment**.  
 
 
